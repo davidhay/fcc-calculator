@@ -155,7 +155,6 @@ const Calculator = (props) => {
   const handleDecimalPoint = (e) => {
     setState((oldState) => {
       if (oldState.showingResult) {
-        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaa");
         return {
           ...oldState,
           showingResult: false,
@@ -191,15 +190,27 @@ const Calculator = (props) => {
           currentVal: op,
         };
       } else {
+        //we have operator after operator
         if (isOperator(oldState.currentVal)) {
           //replace operator
-          return {
-            ...oldState,
-            showingResult: false,
-            currentVal: op,
-          };
+          if (op === "-") {
+            // push - onto item, put - as op
+            // how do I know that there's a minus.
+            return {
+              ...oldState,
+              items: [oldState.items, oldState.currentVal],
+              showingResult: false,
+              currentVal: op,
+            };
+          } else {
+            return {
+              ...oldState,
+              showingResult: false,
+              currentVal: op,
+            };
+          }
         } else {
-          //we have a number - we add it as such
+          //we have operator after number
           return {
             ...oldState,
             showingResult: false,
@@ -216,31 +227,48 @@ const Calculator = (props) => {
       console.log("NUM" + e.target.value);
       const num = e.target.value;
       if (oldState.showingResult) {
+        console.log("number 001");
         return {
           ...oldState,
           showingResult: false,
           items: [],
           currentVal: num,
         };
+      } else if (!isOperator(oldState.currentVal)) {
+        //PREVIOUS NUMBER
+        if (oldState.currentVal === "0" || oldState.currentVal === "0.") {
+          //replace 0 with num
+          return {
+            ...oldState,
+            showingResult: false,
+            currentVal: num,
+          };
+        } else {
+          //concat to end
+          return {
+            ...oldState,
+            showingResult: false,
+            currentVal: oldState.currentVal + num,
+          };
+        }
       } else {
-        if (isOperator(oldState.currentVal)) {
-          console.log("have op now number!");
+        //MAKE THE NUMBER NEGATIVE?
+        if (
+          oldState.currentVal === "-" &&
+          oldState.items.length > 0 &&
+          isOperator(oldState.items[oldState.items.length - 1])
+        ) {
+          return {
+            ...oldState,
+            showingResult: false,
+            currentVal: oldState.currentVal + num,
+          };
+        } else {
+          //START A NEW NUMBER
           return {
             ...oldState,
             showingResult: false,
             items: [...oldState.items, oldState.currentVal],
-            currentVal: num,
-          };
-        } else if (oldState.currentVal !== "0") {
-          return {
-            showingResult: false,
-            ...oldState,
-            currentVal: oldState.currentVal + num,
-          };
-        } else {
-          return {
-            showingResult: false,
-            ...oldState,
             currentVal: num,
           };
         }
